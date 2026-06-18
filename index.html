@@ -1,0 +1,1553 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ЧМ‑2026: Группы → Полная сетка плей‑офф</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+      background: #f0f4f8;
+      padding: 24px;
+      color: #1e293b;
+      font-size: 15px;
+    }
+    .app { max-width: 1600px; margin: 0 auto; }
+    h1 {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    h1 small { font-weight: 400; font-size: 16px; color: #475569; }
+    .subtitle {
+      color: #475569;
+      margin-bottom: 24px;
+      border-left: 4px solid #3b82f6;
+      padding-left: 16px;
+      font-size: 15px;
+    }
+    .groups-section { margin-bottom: 32px; }
+    .groups-container {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+    @media (max-width: 900px) {
+      .groups-container { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 500px) {
+      .groups-container { grid-template-columns: 1fr; }
+    }
+    .group-card {
+      background: white;
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+      border: 1px solid #e9edf2;
+    }
+    .group-title {
+      font-weight: 700;
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+    .team-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 4px;
+      padding: 4px 6px;
+      border-radius: 8px;
+      transition: background 0.1s;
+    }
+    .team-row.conflict {
+      background: #fee2e2;
+      border: 1px solid #fca5a5;
+    }
+    .team-row.qualified {
+      background: #dcfce7;
+      border: 1px solid #86efac;
+    }
+    .team-row input[type="number"] {
+      width: 44px;
+      padding: 4px 2px;
+      border: 1px solid #d1d9e6;
+      border-radius: 6px;
+      text-align: center;
+      font-size: 14px;
+      font-weight: 600;
+      background: white;
+    }
+    .team-row input[type="number"]:focus {
+      outline: 2px solid #3b82f6;
+      border-color: transparent;
+    }
+    .team-name {
+      flex: 1;
+      font-weight: 500;
+      font-size: 14px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .team-name .flag-emoji { font-size: 20px; line-height: 1; }
+    .team-name .short-code {
+      font-size: 13px;
+      font-weight: 700;
+      color: #0f172a;
+      background: #e9edf2;
+      padding: 0 8px;
+      border-radius: 4px;
+      line-height: 1.6;
+    }
+    .team-stats {
+      font-size: 12px;
+      color: #475569;
+      display: flex;
+      gap: 4px;
+      align-items: center;
+      white-space: nowrap;
+    }
+    .team-stats .pts {
+      font-weight: 700;
+      color: #0f172a;
+      min-width: 22px;
+      text-align: center;
+    }
+    .qual-badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 1px 8px;
+      border-radius: 12px;
+      margin-left: 4px;
+    }
+    .qual-1 { background: #dcfce7; color: #166534; }
+    .qual-2 { background: #dbeafe; color: #1e40af; }
+    .qual-3 { background: #fef9c3; color: #854d0e; }
+    .qual-no { background: #f1f5f9; color: #64748b; }
+
+    .swap-btn {
+      background: #e9edf2;
+      border: none;
+      border-radius: 4px;
+      padding: 0 6px;
+      font-size: 14px;
+      cursor: pointer;
+      color: #1e293b;
+      line-height: 1.6;
+      transition: 0.1s;
+    }
+    .swap-btn:hover { background: #d1d9e6; }
+    .swap-btn:active { transform: scale(0.95); }
+    .swap-btn.disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    .third-place-section {
+      background: white;
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 24px;
+      border: 1px solid #e9edf2;
+    }
+    .third-place-section h3 {
+      font-size: 18px;
+      margin-bottom: 8px;
+    }
+    .third-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .third-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 8px;
+      border: 1px solid #e9edf2;
+      background: #f8fafc;
+    }
+    .third-item.qualified {
+      background: #dcfce7;
+      border-color: #86efac;
+    }
+    .third-item.conflict {
+      background: #fee2e2;
+      border-color: #fca5a5;
+    }
+    .third-item .flag-emoji { font-size: 20px; }
+    .third-item .code { font-weight: 700; margin-right: 4px; }
+    .third-item .pts { font-weight: 600; margin-left: 6px; }
+    .third-item .swap-btn { font-size: 12px; padding: 0 4px; }
+
+    .bracket-section {
+      background: white;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+      border: 1px solid #e9edf2;
+    }
+    .bracket-section h2 {
+      font-size: 22px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .bracket-tree {
+      display: flex;
+      justify-content: flex-start;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 8px 16px;
+      min-width: 100%;
+    }
+    .round-column {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-around;
+      flex: 0 0 auto;
+      min-width: 140px;
+      max-width: 180px;
+    }
+    .round-column .round-label {
+      font-weight: 600;
+      font-size: 13px;
+      color: #475569;
+      text-align: center;
+      margin-bottom: 6px;
+      border-bottom: 1px solid #e9edf2;
+      padding-bottom: 4px;
+    }
+    .match-card {
+      background: #f8fafc;
+      border-radius: 10px;
+      padding: 6px 8px;
+      border: 1px solid #e9edf2;
+      margin-bottom: 6px;
+      font-size: 13px;
+      transition: background 0.15s;
+      cursor: default;
+    }
+    .match-card:hover { background: #f1f5f9; }
+    .match-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: #64748b;
+      border-bottom: 1px dashed #dce1e8;
+      padding-bottom: 2px;
+      margin-bottom: 3px;
+    }
+    .match-teams {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 4px;
+      font-weight: 500;
+      font-size: 14px;
+    }
+    .match-teams .team-slot {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 600;
+      background: #e9edf2;
+      color: #0f172a;
+      white-space: nowrap;
+      font-size: 14px;
+    }
+    .match-teams .team-slot .flag-emoji { font-size: 16px; line-height: 1; }
+    .match-teams .team-slot.winner {
+      background: #dcfce7;
+      border: 1px solid #86efac;
+    }
+    .match-teams .team-slot:not(.no-click):hover { background: #dbeafe; }
+    .match-teams .team-slot.no-click {
+      opacity: 0.6;
+      cursor: not-allowed;
+      background: #e9edf2;
+    }
+    .match-teams .vs {
+      color: #94a3b8;
+      font-weight: 400;
+      font-size: 12px;
+      flex-shrink: 0;
+    }
+    .match-source {
+      font-size: 10px;
+      color: #64748b;
+      border-top: 1px dashed #dce1e8;
+      padding-top: 2px;
+      margin-top: 2px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .match-source span {
+      background: #e9edf2;
+      padding: 0 4px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 10px;
+    }
+    .match-source .status { font-weight: 600; }
+
+    .controls {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+      align-items: center;
+    }
+    .btn {
+      background: #f1f5f9;
+      border: 1px solid #d1d9e6;
+      padding: 8px 20px;
+      border-radius: 30px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      color: #1e293b;
+      transition: 0.15s;
+    }
+    .btn:hover { background: #e2e8f0; }
+    .btn:active { transform: scale(0.97); }
+    .btn-primary {
+      background: #3b82f6;
+      border-color: #3b82f6;
+      color: white;
+    }
+    .btn-primary:hover { background: #2563eb; }
+    .btn-danger {
+      background: #ef4444;
+      border-color: #ef4444;
+      color: white;
+    }
+    .btn-danger:hover { background: #dc2626; }
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    .footer-note {
+      margin-top: 20px;
+      font-size: 14px;
+      color: #64748b;
+      border-top: 1px solid #e9edf2;
+      padding-top: 16px;
+      text-align: center;
+    }
+
+    @media (max-width: 1200px) {
+      .bracket-tree { flex-wrap: nowrap; }
+      .round-column { min-width: 120px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="app">
+  <h1>
+    ⚽ ЧМ‑2026
+    <small>Группы → Полная сетка плей‑офф</small>
+  </h1>
+  <div class="subtitle">
+    Задайте очки (Pts). При равенстве очков в группах вы можете вручную расставить места с помощью кнопок <strong>↑</strong> и <strong>↓</strong>.
+    <br>В плей‑офф выходят: <strong>1‑е и 2‑е места</strong> из каждой группы + <strong>8 лучших 3‑х мест</strong> (вы можете менять порядок внутри каждой группы с одинаковыми очками).
+    <br>После расстановки нажмите <strong>«Зафиксировать места»</strong> – сетка построится автоматически по официальной таблице Annexe C.
+  </div>
+
+  <div class="groups-section">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap;">
+      <h2 style="font-size:20px;">📋 Группы</h2>
+      <div class="controls">
+        <button class="btn btn-primary" id="fixBtn">✅ Зафиксировать места</button>
+        <button class="btn btn-danger" id="unfixBtn" disabled>↩️ Сбросить фикс</button>
+        <button class="btn" id="resetBtn">🔄 Сбросить всё</button>
+      </div>
+    </div>
+    <div id="groupsContainer" class="groups-container"></div>
+  </div>
+
+  <div id="thirdPlaceContainer" class="third-place-section"></div>
+
+  <div class="bracket-section">
+    <h2>
+      🏆 Плей‑офф
+      <span style="font-weight:400; font-size:16px; color:#475569;">(клик по команде = победитель / снять)</span>
+    </h2>
+    <div id="bracketContainer" class="bracket-tree"></div>
+    <div class="footer-note">
+      Сетка построена по официальному расписанию ЧМ‑2026. Все раунды до финала.
+      <br>Зелёным выделены победители матчей.
+    </div>
+  </div>
+</div>
+
+<script>
+  // ------------------------------------------------------------
+  // 1. ДАННЫЕ ГРУПП
+  // ------------------------------------------------------------
+  const GROUPS_DATA = {
+    A: ['Mexico', 'Korea Republic', 'Czechia', 'South Africa'],
+    B: ['Switzerland', 'Canada', 'Qatar', 'Bosnia and Herzegovina'],
+    C: ['Scotland', 'Morocco', 'Brazil', 'Haiti'],
+    D: ['USA', 'Australia', 'Türkiye', 'Paraguay'],
+    E: ['Germany', "Côte d'Ivoire", 'Ecuador', 'Curaçao'],
+    F: ['Sweden', 'Japan', 'Netherlands', 'Tunisia'],
+    G: ['New Zealand', 'IR Iran', 'Belgium', 'Egypt'],
+    H: ['Uruguay', 'Saudi Arabia', 'Spain', 'Cabo Verde'],
+    I: ['Norway', 'France', 'Senegal', 'Iraq'],
+    J: ['Argentina', 'Austria', 'Jordan', 'Algeria'],
+    K: ['Colombia', 'Congo DR', 'Portugal', 'Uzbekistan'],
+    L: ['England', 'Ghana', 'Panama', 'Croatia']
+  };
+
+  // ------------------------------------------------------------
+  // 2. ФЛАГИ + КОДЫ
+  // ------------------------------------------------------------
+  const FLAGS = {
+    'Mexico': '🇲🇽', 'Korea Republic': '🇰🇷', 'Czechia': '🇨🇿', 'South Africa': '🇿🇦',
+    'Switzerland': '🇨🇭', 'Canada': '🇨🇦', 'Qatar': '🇶🇦', 'Bosnia and Herzegovina': '🇧🇦',
+    'Scotland': '🏴󠁧󠁢󠁳󠁣󠁴󠁿', 'Morocco': '🇲🇦', 'Brazil': '🇧🇷', 'Haiti': '🇭🇹',
+    'USA': '🇺🇸', 'Australia': '🇦🇺', 'Türkiye': '🇹🇷', 'Paraguay': '🇵🇾',
+    'Germany': '🇩🇪', "Côte d'Ivoire": '🇨🇮', 'Ecuador': '🇪🇨', 'Curaçao': '🇨🇼',
+    'Sweden': '🇸🇪', 'Japan': '🇯🇵', 'Netherlands': '🇳🇱', 'Tunisia': '🇹🇳',
+    'New Zealand': '🇳🇿', 'IR Iran': '🇮🇷', 'Belgium': '🇧🇪', 'Egypt': '🇪🇬',
+    'Uruguay': '🇺🇾', 'Saudi Arabia': '🇸🇦', 'Spain': '🇪🇸', 'Cabo Verde': '🇨🇻',
+    'Norway': '🇳🇴', 'France': '🇫🇷', 'Senegal': '🇸🇳', 'Iraq': '🇮🇶',
+    'Argentina': '🇦🇷', 'Austria': '🇦🇹', 'Jordan': '🇯🇴', 'Algeria': '🇩🇿',
+    'Colombia': '🇨🇴', 'Congo DR': '🇨🇩', 'Portugal': '🇵🇹', 'Uzbekistan': '🇺🇿',
+    'England': '🏴󠁧󠁢󠁥󠁮󠁧󠁿', 'Ghana': '🇬🇭', 'Panama': '🇵🇦', 'Croatia': '🇭🇷'
+  };
+
+  const COUNTRY_CODES = {
+    'Mexico': 'MX', 'Korea Republic': 'KR', 'Czechia': 'CZ', 'South Africa': 'ZA',
+    'Switzerland': 'CH', 'Canada': 'CA', 'Qatar': 'QA', 'Bosnia and Herzegovina': 'BA',
+    'Scotland': 'SCO', 'Morocco': 'MA', 'Brazil': 'BR', 'Haiti': 'HT',
+    'USA': 'US', 'Australia': 'AU', 'Türkiye': 'TR', 'Paraguay': 'PY',
+    'Germany': 'DE', "Côte d'Ivoire": 'CI', 'Ecuador': 'EC', 'Curaçao': 'CW',
+    'Sweden': 'SE', 'Japan': 'JP', 'Netherlands': 'NL', 'Tunisia': 'TN',
+    'New Zealand': 'NZ', 'IR Iran': 'IR', 'Belgium': 'BE', 'Egypt': 'EG',
+    'Uruguay': 'UY', 'Saudi Arabia': 'SA', 'Spain': 'ES', 'Cabo Verde': 'CV',
+    'Norway': 'NO', 'France': 'FR', 'Senegal': 'SN', 'Iraq': 'IQ',
+    'Argentina': 'AR', 'Austria': 'AT', 'Jordan': 'JO', 'Algeria': 'DZ',
+    'Colombia': 'CO', 'Congo DR': 'CD', 'Portugal': 'PT', 'Uzbekistan': 'UZ',
+    'England': 'ENG', 'Ghana': 'GH', 'Panama': 'PA', 'Croatia': 'HR'
+  };
+
+  function getFlag(team) { return FLAGS[team] || '🏳️'; }
+  function getCode(team) { return COUNTRY_CODES[team] || team.slice(0, 3).toUpperCase(); }
+
+  // ------------------------------------------------------------
+  // 3. ТАБЛИЦА 495 ВАРИАНТОВ (Annexe C)
+  // ------------------------------------------------------------
+  const PAIRINGS_RAW = `
+    3E 3J 3I 3F 3H 3G 3L 3K
+    3H 3G 3I 3D 3J 3F 3L 3K
+    3E 3J 3I 3D 3H 3G 3L 3K
+    3E 3J 3I 3D 3H 3F 3L 3K
+    3E 3G 3I 3D 3J 3F 3L 3K
+    3E 3G 3J 3D 3H 3F 3L 3K
+    3E 3G 3I 3D 3H 3F 3L 3K
+    3E 3G 3J 3D 3H 3F 3L 3I
+    3E 3G 3J 3D 3H 3F 3I 3K
+    3H 3G 3I 3C 3J 3F 3L 3K
+    3E 3J 3I 3C 3H 3G 3L 3K
+    3E 3J 3I 3C 3H 3F 3L 3K
+    3E 3G 3I 3C 3J 3F 3L 3K
+    3E 3G 3J 3C 3H 3F 3L 3K
+    3E 3G 3I 3C 3H 3F 3L 3K
+    3E 3G 3J 3C 3H 3F 3L 3I
+    3E 3G 3J 3C 3H 3F 3I 3K
+    3H 3G 3I 3C 3J 3D 3L 3K
+    3C 3J 3I 3D 3H 3F 3L 3K
+    3C 3G 3I 3D 3J 3F 3L 3K
+    3C 3G 3J 3D 3H 3F 3L 3K
+    3C 3G 3I 3D 3H 3F 3L 3K
+    3C 3G 3J 3D 3H 3F 3L 3I
+    3C 3G 3J 3D 3H 3F 3I 3K
+    3E 3J 3I 3C 3H 3D 3L 3K
+    3E 3G 3I 3C 3J 3D 3L 3K
+    3E 3G 3J 3C 3H 3D 3L 3K
+    3E 3G 3I 3C 3H 3D 3L 3K
+    3E 3G 3J 3C 3H 3D 3L 3I
+    3E 3G 3J 3C 3H 3D 3I 3K
+    3C 3J 3E 3D 3I 3F 3L 3K
+    3C 3J 3E 3D 3H 3F 3L 3K
+    3C 3E 3I 3D 3H 3F 3L 3K
+    3C 3J 3E 3D 3H 3F 3L 3I
+    3C 3J 3E 3D 3H 3F 3I 3K
+    3C 3G 3E 3D 3J 3F 3L 3K
+    3C 3G 3E 3D 3I 3F 3L 3K
+    3C 3G 3E 3D 3J 3F 3L 3I
+    3C 3G 3E 3D 3J 3F 3I 3K
+    3C 3G 3E 3D 3H 3F 3L 3K
+    3C 3G 3J 3D 3H 3F 3L 3E
+    3C 3G 3J 3D 3H 3F 3E 3K
+    3C 3G 3E 3D 3H 3F 3L 3I
+    3C 3G 3E 3D 3H 3F 3I 3K
+    3C 3G 3J 3D 3H 3F 3E 3I
+    3H 3J 3B 3F 3I 3G 3L 3K
+    3E 3J 3I 3B 3H 3G 3L 3K
+    3E 3J 3B 3F 3I 3H 3L 3K
+    3E 3J 3B 3F 3I 3G 3L 3K
+    3E 3J 3B 3F 3H 3G 3L 3K
+    3E 3G 3B 3F 3I 3H 3L 3K
+    3E 3J 3B 3F 3H 3G 3L 3I
+    3E 3J 3B 3F 3H 3G 3I 3K
+    3H 3J 3B 3D 3I 3G 3L 3K
+    3H 3J 3B 3D 3I 3F 3L 3K
+    3I 3G 3B 3D 3J 3F 3L 3K
+    3H 3G 3B 3D 3J 3F 3L 3K
+    3H 3G 3B 3D 3I 3F 3L 3K
+    3H 3G 3B 3D 3J 3F 3L 3I
+    3H 3G 3B 3D 3J 3F 3I 3K
+    3E 3J 3B 3D 3I 3H 3L 3K
+    3E 3J 3B 3D 3I 3G 3L 3K
+    3E 3J 3B 3D 3H 3G 3L 3K
+    3E 3G 3B 3D 3I 3H 3L 3K
+    3E 3J 3B 3D 3H 3G 3L 3I
+    3E 3J 3B 3D 3H 3G 3I 3K
+    3E 3J 3B 3D 3I 3F 3L 3K
+    3E 3J 3B 3D 3H 3F 3L 3K
+    3E 3I 3B 3D 3H 3F 3L 3K
+    3E 3J 3B 3D 3H 3F 3L 3I
+    3E 3J 3B 3D 3H 3F 3I 3K
+    3E 3G 3B 3D 3J 3F 3L 3K
+    3E 3G 3B 3D 3I 3F 3L 3K
+    3E 3G 3B 3D 3J 3F 3L 3I
+    3E 3G 3B 3D 3J 3F 3I 3K
+    3E 3G 3B 3D 3H 3F 3L 3K
+    3H 3G 3B 3D 3J 3F 3L 3E
+    3H 3G 3B 3D 3J 3F 3E 3K
+    3E 3G 3B 3D 3H 3F 3L 3I
+    3E 3G 3B 3D 3H 3F 3I 3K
+    3H 3G 3B 3D 3J 3F 3E 3I
+    3H 3J 3B 3C 3I 3G 3L 3K
+    3H 3J 3B 3C 3I 3F 3L 3K
+    3I 3G 3B 3C 3J 3F 3L 3K
+    3H 3G 3B 3C 3J 3F 3L 3K
+    3H 3G 3B 3C 3I 3F 3L 3K
+    3H 3G 3B 3C 3J 3F 3L 3I
+    3H 3G 3B 3C 3J 3F 3I 3K
+    3E 3J 3B 3C 3I 3H 3L 3K
+    3E 3J 3B 3C 3I 3G 3L 3K
+    3E 3J 3B 3C 3H 3G 3L 3K
+    3E 3G 3B 3C 3I 3H 3L 3K
+    3E 3J 3B 3C 3H 3G 3L 3I
+    3E 3J 3B 3C 3H 3G 3I 3K
+    3E 3J 3B 3C 3I 3F 3L 3K
+    3E 3J 3B 3C 3H 3F 3L 3K
+    3E 3I 3B 3C 3H 3F 3L 3K
+    3E 3J 3B 3C 3H 3F 3L 3I
+    3E 3J 3B 3C 3H 3F 3I 3K
+    3E 3G 3B 3C 3J 3F 3L 3K
+    3E 3G 3B 3C 3I 3F 3L 3K
+    3E 3G 3B 3C 3J 3F 3L 3I
+    3E 3G 3B 3C 3J 3F 3I 3K
+    3E 3G 3B 3C 3H 3F 3L 3K
+    3H 3G 3B 3C 3J 3F 3L 3E
+    3H 3G 3B 3C 3J 3F 3E 3K
+    3E 3G 3B 3C 3H 3F 3L 3I
+    3E 3G 3B 3C 3H 3F 3I 3K
+    3H 3G 3B 3C 3J 3F 3E 3I
+    3H 3J 3B 3C 3I 3D 3L 3K
+    3I 3G 3B 3C 3J 3D 3L 3K
+    3H 3G 3B 3C 3J 3D 3L 3K
+    3H 3G 3B 3C 3I 3D 3L 3K
+    3H 3G 3B 3C 3J 3D 3L 3I
+    3H 3G 3B 3C 3J 3D 3I 3K
+    3C 3J 3B 3D 3I 3F 3L 3K
+    3C 3J 3B 3D 3H 3F 3L 3K
+    3C 3I 3B 3D 3H 3F 3L 3K
+    3C 3J 3B 3D 3H 3F 3L 3I
+    3C 3J 3B 3D 3H 3F 3I 3K
+    3C 3G 3B 3D 3J 3F 3L 3K
+    3C 3G 3B 3D 3I 3F 3L 3K
+    3C 3G 3B 3D 3J 3F 3L 3I
+    3C 3G 3B 3D 3J 3F 3I 3K
+    3C 3G 3B 3D 3H 3F 3L 3K
+    3C 3G 3B 3D 3H 3F 3L 3J
+    3H 3G 3B 3C 3J 3F 3D 3K
+    3C 3G 3B 3D 3H 3F 3L 3I
+    3C 3G 3B 3D 3H 3F 3I 3K
+    3H 3G 3B 3C 3J 3F 3D 3I
+    3E 3J 3B 3C 3I 3D 3L 3K
+    3E 3J 3B 3C 3H 3D 3L 3K
+    3E 3I 3B 3C 3H 3D 3L 3K
+    3E 3J 3B 3C 3H 3D 3L 3I
+    3E 3J 3B 3C 3H 3D 3I 3K
+    3E 3G 3B 3C 3J 3D 3L 3K
+    3E 3G 3B 3C 3I 3D 3L 3K
+    3E 3G 3B 3C 3J 3D 3L 3I
+    3E 3G 3B 3C 3J 3D 3I 3K
+    3E 3G 3B 3C 3H 3D 3L 3K
+    3H 3G 3B 3C 3J 3D 3L 3E
+    3H 3G 3B 3C 3J 3D 3E 3K
+    3E 3G 3B 3C 3H 3D 3L 3I
+    3E 3G 3B 3C 3H 3D 3I 3K
+    3H 3G 3B 3C 3J 3D 3E 3I
+    3C 3J 3B 3D 3E 3F 3L 3K
+    3C 3E 3B 3D 3I 3F 3L 3K
+    3C 3J 3B 3D 3E 3F 3L 3I
+    3C 3J 3B 3D 3E 3F 3I 3K
+    3C 3E 3B 3D 3H 3F 3L 3K
+    3C 3J 3B 3D 3H 3F 3L 3E
+    3C 3J 3B 3D 3H 3F 3E 3K
+    3C 3E 3B 3D 3H 3F 3L 3I
+    3C 3E 3B 3D 3H 3F 3I 3K
+    3C 3J 3B 3D 3H 3F 3E 3I
+    3C 3G 3B 3D 3E 3F 3L 3K
+    3C 3G 3B 3D 3J 3F 3L 3E
+    3C 3G 3B 3D 3J 3F 3E 3K
+    3C 3G 3B 3D 3E 3F 3L 3I
+    3C 3G 3B 3D 3E 3F 3I 3K
+    3C 3G 3B 3D 3J 3F 3E 3I
+    3C 3G 3B 3D 3H 3F 3L 3E
+    3C 3G 3B 3D 3H 3F 3E 3K
+    3H 3G 3B 3C 3J 3F 3D 3E
+    3C 3G 3B 3D 3H 3F 3E 3I
+    3H 3J 3I 3F 3A 3G 3L 3K
+    3E 3J 3I 3A 3H 3G 3L 3K
+    3E 3J 3I 3F 3A 3H 3L 3K
+    3E 3J 3I 3F 3A 3G 3L 3K
+    3E 3G 3J 3F 3A 3H 3L 3K
+    3E 3G 3I 3F 3A 3H 3L 3K
+    3E 3G 3J 3F 3A 3H 3L 3I
+    3E 3G 3J 3F 3A 3H 3I 3K
+    3H 3J 3I 3D 3A 3G 3L 3K
+    3H 3J 3I 3D 3A 3F 3L 3K
+    3I 3G 3J 3D 3A 3F 3L 3K
+    3H 3G 3J 3D 3A 3F 3L 3K
+    3H 3G 3I 3D 3A 3F 3L 3K
+    3H 3G 3J 3D 3A 3F 3L 3I
+    3H 3G 3J 3D 3A 3F 3I 3K
+    3E 3J 3I 3D 3A 3H 3L 3K
+    3E 3J 3I 3D 3A 3G 3L 3K
+    3E 3G 3J 3D 3A 3H 3L 3K
+    3E 3G 3I 3D 3A 3H 3L 3K
+    3E 3G 3J 3D 3A 3H 3L 3I
+    3E 3G 3J 3D 3A 3H 3I 3K
+    3E 3J 3I 3D 3A 3F 3L 3K
+    3H 3J 3E 3D 3A 3F 3L 3K
+    3H 3E 3I 3D 3A 3F 3L 3K
+    3H 3J 3E 3D 3A 3F 3L 3I
+    3H 3J 3E 3D 3A 3F 3I 3K
+    3E 3G 3J 3D 3A 3F 3L 3K
+    3E 3G 3I 3D 3A 3F 3L 3K
+    3E 3G 3J 3D 3A 3F 3L 3I
+    3E 3G 3J 3D 3A 3F 3I 3K
+    3H 3G 3E 3D 3A 3F 3L 3K
+    3H 3G 3J 3D 3A 3F 3L 3E
+    3H 3G 3J 3D 3A 3F 3E 3K
+    3H 3G 3E 3D 3A 3F 3L 3I
+    3H 3G 3E 3D 3A 3F 3I 3K
+    3H 3G 3J 3D 3A 3F 3E 3I
+    3H 3J 3I 3C 3A 3G 3L 3K
+    3H 3J 3I 3C 3A 3F 3L 3K
+    3I 3G 3J 3C 3A 3F 3L 3K
+    3H 3G 3J 3C 3A 3F 3L 3K
+    3H 3G 3I 3C 3A 3F 3L 3K
+    3H 3G 3J 3C 3A 3F 3L 3I
+    3H 3G 3J 3C 3A 3F 3I 3K
+    3E 3J 3I 3C 3A 3H 3L 3K
+    3E 3J 3I 3C 3A 3G 3L 3K
+    3E 3G 3J 3C 3A 3H 3L 3K
+    3E 3G 3I 3C 3A 3H 3L 3K
+    3E 3G 3J 3C 3A 3H 3L 3I
+    3E 3G 3J 3C 3A 3H 3I 3K
+    3E 3J 3I 3C 3A 3F 3L 3K
+    3H 3J 3E 3C 3A 3F 3L 3K
+    3H 3E 3I 3C 3A 3F 3L 3K
+    3H 3J 3E 3C 3A 3F 3L 3I
+    3H 3J 3E 3C 3A 3F 3I 3K
+    3E 3G 3J 3C 3A 3F 3L 3K
+    3E 3G 3I 3C 3A 3F 3L 3K
+    3E 3G 3J 3C 3A 3F 3L 3I
+    3E 3G 3J 3C 3A 3F 3I 3K
+    3H 3G 3E 3C 3A 3F 3L 3K
+    3H 3G 3J 3C 3A 3F 3L 3E
+    3H 3G 3J 3C 3A 3F 3E 3K
+    3H 3G 3E 3C 3A 3F 3L 3I
+    3H 3G 3E 3C 3A 3F 3I 3K
+    3H 3G 3J 3C 3A 3F 3E 3I
+    3H 3J 3I 3C 3A 3D 3L 3K
+    3I 3G 3J 3C 3A 3D 3L 3K
+    3H 3G 3J 3C 3A 3D 3L 3K
+    3H 3G 3I 3C 3A 3D 3L 3K
+    3H 3G 3J 3C 3A 3D 3L 3I
+    3H 3G 3J 3C 3A 3D 3I 3K
+    3C 3J 3I 3D 3A 3F 3L 3K
+    3H 3J 3F 3C 3A 3D 3L 3K
+    3H 3F 3I 3C 3A 3D 3L 3K
+    3H 3J 3F 3C 3A 3D 3L 3I
+    3H 3J 3F 3C 3A 3D 3I 3K
+    3C 3G 3J 3D 3A 3F 3L 3K
+    3C 3G 3I 3D 3A 3F 3L 3K
+    3C 3G 3J 3D 3A 3F 3L 3I
+    3C 3G 3J 3D 3A 3F 3I 3K
+    3H 3G 3F 3C 3A 3D 3L 3K
+    3C 3G 3J 3D 3A 3F 3L 3H
+    3H 3G 3J 3C 3A 3F 3D 3K
+    3H 3G 3F 3C 3A 3D 3L 3I
+    3H 3G 3F 3C 3A 3D 3I 3K
+    3H 3G 3J 3C 3A 3F 3D 3I
+    3E 3J 3I 3C 3A 3D 3L 3K
+    3H 3J 3E 3C 3A 3D 3L 3K
+    3H 3E 3I 3C 3A 3D 3L 3K
+    3H 3J 3E 3C 3A 3D 3L 3I
+    3H 3J 3E 3C 3A 3D 3I 3K
+    3E 3G 3J 3C 3A 3D 3L 3K
+    3E 3G 3I 3C 3A 3D 3L 3K
+    3E 3G 3J 3C 3A 3D 3L 3I
+    3E 3G 3J 3C 3A 3D 3I 3K
+    3H 3G 3E 3C 3A 3D 3L 3K
+    3H 3G 3J 3C 3A 3D 3L 3E
+    3H 3G 3J 3C 3A 3D 3E 3K
+    3H 3G 3E 3C 3A 3D 3L 3I
+    3H 3G 3E 3C 3A 3D 3I 3K
+    3H 3G 3J 3C 3A 3D 3E 3I
+    3C 3J 3E 3D 3A 3F 3L 3K
+    3C 3E 3I 3D 3A 3F 3L 3K
+    3C 3J 3E 3D 3A 3F 3L 3I
+    3C 3J 3E 3D 3A 3F 3I 3K
+    3H 3E 3F 3C 3A 3D 3L 3K
+    3H 3J 3F 3C 3A 3D 3L 3E
+    3H 3J 3E 3C 3A 3F 3D 3K
+    3H 3E 3F 3C 3A 3D 3L 3I
+    3H 3E 3F 3C 3A 3D 3I 3K
+    3H 3J 3E 3C 3A 3F 3D 3I
+    3C 3G 3E 3D 3A 3F 3L 3K
+    3C 3G 3J 3D 3A 3F 3L 3E
+    3C 3G 3J 3D 3A 3F 3E 3K
+    3C 3G 3E 3D 3A 3F 3L 3I
+    3C 3G 3E 3D 3A 3F 3I 3K
+    3C 3G 3J 3D 3A 3F 3E 3I
+    3H 3G 3F 3C 3A 3D 3L 3E
+    3H 3G 3E 3C 3A 3F 3D 3K
+    3H 3G 3J 3C 3A 3F 3D 3E
+    3H 3G 3E 3C 3A 3F 3D 3I
+    3H 3J 3B 3A 3I 3G 3L 3K
+    3H 3J 3B 3A 3I 3F 3L 3K
+    3I 3J 3B 3F 3A 3G 3L 3K
+    3H 3J 3B 3F 3A 3G 3L 3K
+    3H 3G 3B 3A 3I 3F 3L 3K
+    3H 3J 3B 3F 3A 3G 3L 3I
+    3H 3J 3B 3F 3A 3G 3I 3K
+    3E 3J 3B 3A 3I 3H 3L 3K
+    3E 3J 3B 3A 3I 3G 3L 3K
+    3E 3J 3B 3A 3H 3G 3L 3K
+    3E 3G 3B 3A 3I 3H 3L 3K
+    3E 3J 3B 3A 3H 3G 3L 3I
+    3E 3J 3B 3A 3H 3G 3I 3K
+    3E 3J 3B 3A 3I 3F 3L 3K
+    3E 3J 3B 3F 3A 3H 3L 3K
+    3E 3I 3B 3F 3A 3H 3L 3K
+    3E 3J 3B 3F 3A 3H 3L 3I
+    3E 3J 3B 3F 3A 3H 3I 3K
+    3E 3J 3B 3F 3A 3G 3L 3K
+    3E 3G 3B 3A 3I 3F 3L 3K
+    3E 3J 3B 3F 3A 3G 3L 3I
+    3E 3J 3B 3F 3A 3G 3I 3K
+    3E 3G 3B 3F 3A 3H 3L 3K
+    3H 3J 3B 3F 3A 3G 3L 3E
+    3H 3J 3B 3F 3A 3G 3E 3K
+    3E 3G 3B 3F 3A 3H 3L 3I
+    3E 3G 3B 3F 3A 3H 3I 3K
+    3H 3J 3B 3F 3A 3G 3E 3I
+    3I 3J 3B 3D 3A 3H 3L 3K
+    3I 3J 3B 3D 3A 3G 3L 3K
+    3H 3J 3B 3D 3A 3G 3L 3K
+    3I 3G 3B 3D 3A 3H 3L 3K
+    3H 3J 3B 3D 3A 3G 3L 3I
+    3H 3J 3B 3D 3A 3G 3I 3K
+    3I 3J 3B 3D 3A 3F 3L 3K
+    3H 3J 3B 3D 3A 3F 3L 3K
+    3H 3I 3B 3D 3A 3F 3L 3K
+    3H 3J 3B 3D 3A 3F 3L 3I
+    3H 3J 3B 3D 3A 3F 3I 3K
+    3F 3J 3B 3D 3A 3G 3L 3K
+    3I 3G 3B 3D 3A 3F 3L 3K
+    3F 3J 3B 3D 3A 3G 3L 3I
+    3F 3J 3B 3D 3A 3G 3I 3K
+    3H 3G 3B 3D 3A 3F 3L 3K
+    3H 3G 3B 3D 3A 3F 3L 3J
+    3H 3G 3B 3D 3A 3F 3J 3K
+    3H 3G 3B 3D 3A 3F 3L 3I
+    3H 3G 3B 3D 3A 3F 3I 3K
+    3H 3G 3B 3D 3A 3F 3I 3J
+    3E 3J 3B 3A 3I 3D 3L 3K
+    3E 3J 3B 3D 3A 3H 3L 3K
+    3E 3I 3B 3D 3A 3H 3L 3K
+    3E 3J 3B 3D 3A 3H 3L 3I
+    3E 3J 3B 3D 3A 3H 3I 3K
+    3E 3J 3B 3D 3A 3G 3L 3K
+    3E 3G 3B 3A 3I 3D 3L 3K
+    3E 3J 3B 3D 3A 3G 3L 3I
+    3E 3J 3B 3D 3A 3G 3I 3K
+    3E 3G 3B 3D 3A 3H 3L 3K
+    3H 3J 3B 3D 3A 3G 3L 3E
+    3H 3J 3B 3D 3A 3G 3E 3K
+    3E 3G 3B 3D 3A 3H 3L 3I
+    3E 3G 3B 3D 3A 3H 3I 3K
+    3H 3J 3B 3D 3A 3G 3E 3I
+    3E 3J 3B 3D 3A 3F 3L 3K
+    3E 3I 3B 3D 3A 3F 3L 3K
+    3E 3J 3B 3D 3A 3F 3L 3I
+    3E 3J 3B 3D 3A 3F 3I 3K
+    3H 3E 3B 3D 3A 3F 3L 3K
+    3H 3J 3B 3D 3A 3F 3L 3E
+    3H 3J 3B 3D 3A 3F 3E 3K
+    3H 3E 3B 3D 3A 3F 3L 3I
+    3H 3E 3B 3D 3A 3F 3I 3K
+    3H 3J 3B 3D 3A 3F 3E 3I
+    3E 3G 3B 3D 3A 3F 3L 3K
+    3E 3G 3B 3D 3A 3F 3L 3J
+    3E 3G 3B 3D 3A 3F 3J 3K
+    3E 3G 3B 3D 3A 3F 3L 3I
+    3E 3G 3B 3D 3A 3F 3I 3K
+    3E 3G 3B 3D 3A 3F 3I 3J
+    3H 3G 3B 3D 3A 3F 3L 3E
+    3H 3G 3B 3D 3A 3F 3E 3K
+    3H 3G 3B 3D 3A 3F 3E 3J
+    3H 3G 3B 3D 3A 3F 3E 3I
+    3I 3J 3B 3C 3A 3H 3L 3K
+    3I 3J 3B 3C 3A 3G 3L 3K
+    3H 3J 3B 3C 3A 3G 3L 3K
+    3I 3G 3B 3C 3A 3H 3L 3K
+    3H 3J 3B 3C 3A 3G 3L 3I
+    3H 3J 3B 3C 3A 3G 3I 3K
+    3I 3J 3B 3C 3A 3F 3L 3K
+    3H 3J 3B 3C 3A 3F 3L 3K
+    3H 3I 3B 3C 3A 3F 3L 3K
+    3H 3J 3B 3C 3A 3F 3L 3I
+    3H 3J 3B 3C 3A 3F 3I 3K
+    3C 3J 3B 3F 3A 3G 3L 3K
+    3I 3G 3B 3C 3A 3F 3L 3K
+    3C 3J 3B 3F 3A 3G 3L 3I
+    3C 3J 3B 3F 3A 3G 3I 3K
+    3H 3G 3B 3C 3A 3F 3L 3K
+    3H 3G 3B 3C 3A 3F 3L 3J
+    3H 3G 3B 3C 3A 3F 3J 3K
+    3H 3G 3B 3C 3A 3F 3L 3I
+    3H 3G 3B 3C 3A 3F 3I 3K
+    3H 3G 3B 3C 3A 3F 3I 3J
+    3E 3J 3B 3A 3I 3C 3L 3K
+    3E 3J 3B 3C 3A 3H 3L 3K
+    3E 3I 3B 3C 3A 3H 3L 3K
+    3E 3J 3B 3C 3A 3H 3L 3I
+    3E 3J 3B 3C 3A 3H 3I 3K
+    3E 3J 3B 3C 3A 3G 3L 3K
+    3E 3G 3B 3A 3I 3C 3L 3K
+    3E 3J 3B 3C 3A 3G 3L 3I
+    3E 3J 3B 3C 3A 3G 3I 3K
+    3E 3G 3B 3C 3A 3H 3L 3K
+    3H 3J 3B 3C 3A 3G 3L 3E
+    3H 3J 3B 3C 3A 3G 3E 3K
+    3E 3G 3B 3C 3A 3H 3L 3I
+    3E 3G 3B 3C 3A 3H 3I 3K
+    3H 3J 3B 3C 3A 3G 3E 3I
+    3E 3J 3B 3C 3A 3F 3L 3K
+    3E 3I 3B 3C 3A 3F 3L 3K
+    3E 3J 3B 3C 3A 3F 3L 3I
+    3E 3J 3B 3C 3A 3F 3I 3K
+    3H 3E 3B 3C 3A 3F 3L 3K
+    3H 3J 3B 3C 3A 3F 3L 3E
+    3H 3J 3B 3C 3A 3F 3E 3K
+    3H 3E 3B 3C 3A 3F 3L 3I
+    3H 3E 3B 3C 3A 3F 3I 3K
+    3H 3J 3B 3C 3A 3F 3E 3I
+    3E 3G 3B 3C 3A 3F 3L 3K
+    3E 3G 3B 3C 3A 3F 3L 3J
+    3E 3G 3B 3C 3A 3F 3J 3K
+    3E 3G 3B 3C 3A 3F 3L 3I
+    3E 3G 3B 3C 3A 3F 3I 3K
+    3E 3G 3B 3C 3A 3F 3I 3J
+    3H 3G 3B 3C 3A 3F 3L 3E
+    3H 3G 3B 3C 3A 3F 3E 3K
+    3H 3G 3B 3C 3A 3F 3E 3J
+    3H 3G 3B 3C 3A 3F 3E 3I
+    3I 3J 3B 3C 3A 3D 3L 3K
+    3H 3J 3B 3C 3A 3D 3L 3K
+    3H 3I 3B 3C 3A 3D 3L 3K
+    3H 3J 3B 3C 3A 3D 3L 3I
+    3H 3J 3B 3C 3A 3D 3I 3K
+    3C 3J 3B 3D 3A 3G 3L 3K
+    3I 3G 3B 3C 3A 3D 3L 3K
+    3C 3J 3B 3D 3A 3G 3L 3I
+    3C 3J 3B 3D 3A 3G 3I 3K
+    3H 3G 3B 3C 3A 3D 3L 3K
+    3H 3G 3B 3C 3A 3D 3L 3J
+    3H 3G 3B 3C 3A 3D 3J 3K
+    3H 3G 3B 3C 3A 3D 3L 3I
+    3H 3G 3B 3C 3A 3D 3I 3K
+    3H 3G 3B 3C 3A 3D 3I 3J
+    3C 3J 3B 3D 3A 3F 3L 3K
+    3C 3I 3B 3D 3A 3F 3L 3K
+    3C 3J 3B 3D 3A 3F 3L 3I
+    3C 3J 3B 3D 3A 3F 3I 3K
+    3H 3F 3B 3C 3A 3D 3L 3K
+    3C 3J 3B 3D 3A 3F 3L 3H
+    3H 3J 3B 3C 3A 3F 3D 3K
+    3H 3F 3B 3C 3A 3D 3L 3I
+    3H 3F 3B 3C 3A 3D 3I 3K
+    3H 3J 3B 3C 3A 3F 3D 3I
+    3C 3G 3B 3D 3A 3F 3L 3K
+    3C 3G 3B 3D 3A 3F 3L 3J
+    3C 3G 3B 3D 3A 3F 3J 3K
+    3C 3G 3B 3D 3A 3F 3L 3I
+    3C 3G 3B 3D 3A 3F 3I 3K
+    3C 3G 3B 3D 3A 3F 3I 3J
+    3C 3G 3B 3D 3A 3F 3L 3H
+    3H 3G 3B 3C 3A 3F 3D 3K
+    3H 3G 3B 3C 3A 3F 3D 3J
+    3H 3G 3B 3C 3A 3F 3D 3I
+    3E 3J 3B 3C 3A 3D 3L 3K
+    3E 3I 3B 3C 3A 3D 3L 3K
+    3E 3J 3B 3C 3A 3D 3L 3I
+    3E 3J 3B 3C 3A 3D 3I 3K
+    3H 3E 3B 3C 3A 3D 3L 3K
+    3H 3J 3B 3C 3A 3D 3L 3E
+    3H 3J 3B 3C 3A 3D 3E 3K
+    3H 3E 3B 3C 3A 3D 3L 3I
+    3H 3E 3B 3C 3A 3D 3I 3K
+    3H 3J 3B 3C 3A 3D 3E 3I
+    3E 3G 3B 3C 3A 3D 3L 3K
+    3E 3G 3B 3C 3A 3D 3L 3J
+    3E 3G 3B 3C 3A 3D 3J 3K
+    3E 3G 3B 3C 3A 3D 3L 3I
+    3E 3G 3B 3C 3A 3D 3I 3K
+    3E 3G 3B 3C 3A 3D 3I 3J
+    3H 3G 3B 3C 3A 3D 3L 3E
+    3H 3G 3B 3C 3A 3D 3E 3K
+    3H 3G 3B 3C 3A 3D 3E 3J
+    3H 3G 3B 3C 3A 3D 3E 3I
+    3C 3E 3B 3D 3A 3F 3L 3K
+    3C 3J 3B 3D 3A 3F 3L 3E
+    3C 3J 3B 3D 3A 3F 3E 3K
+    3C 3E 3B 3D 3A 3F 3L 3I
+    3C 3E 3B 3D 3A 3F 3I 3K
+    3C 3J 3B 3D 3A 3F 3E 3I
+    3H 3F 3B 3C 3A 3D 3L 3E
+    3H 3E 3B 3C 3A 3F 3D 3K
+    3H 3J 3B 3C 3A 3F 3D 3E
+    3H 3E 3B 3C 3A 3F 3D 3I
+    3C 3G 3B 3D 3A 3F 3L 3E
+    3C 3G 3B 3D 3A 3F 3E 3K
+    3C 3G 3B 3D 3A 3F 3E 3J
+    3C 3G 3B 3D 3A 3F 3E 3I
+    3H 3G 3B 3C 3A 3F 3D 3E
+  `;
+
+  const PAIRINGS = PAIRINGS_RAW.trim().split('\n').map(line => line.trim().split(/\s+/).map(s => s.slice(1)));
+
+  // ------------------------------------------------------------
+  // 4. СОСТОЯНИЕ
+  // ------------------------------------------------------------
+  const points = {};
+  const groupOrder = {};
+  let thirdOrder = [];
+  let isFixed = false;
+
+  function initPoints() {
+    const allTeams = {
+      A: [3, 3, 0, 0], B: [1, 1, 1, 1], C: [3, 1, 1, 0],
+      D: [3, 3, 0, 0], E: [3, 3, 0, 0], F: [3, 1, 1, 0],
+      G: [1, 1, 1, 1], H: [1, 1, 1, 1], I: [3, 3, 0, 0],
+      J: [3, 3, 0, 0], K: [3, 1, 1, 0], L: [3, 3, 0, 0]
+    };
+    for (const [g, teams] of Object.entries(GROUPS_DATA)) {
+      points[g] = allTeams[g] || teams.map(() => 1);
+      const indices = teams.map((_, i) => i);
+      indices.sort((a, b) => (points[g][b] || 0) - (points[g][a] || 0));
+      groupOrder[g] = indices;
+    }
+    thirdOrder = [];
+    isFixed = false;
+  }
+  initPoints();
+
+  const matchWinners = {};
+
+  // ------------------------------------------------------------
+  // 5. МАТЧИ (обновлённые порядок и связи)
+  // ------------------------------------------------------------
+  const R32_FIXTURES = [
+    { id: 74, desc: '1E vs 3A/B/C/D/F',  a: '1E', b: '3A/B/C/D/F', date: '06/29 23:30' },
+    { id: 77, desc: '1I vs 3C/D/F/G/H',  a: '1I', b: '3C/D/F/G/H', date: '06/28 22:00' },
+    { id: 73, desc: '2A vs 2B',          a: '2A', b: '2B', date: '06/29 23:30' },
+    { id: 75, desc: '1F vs 2C',          a: '1F', b: '2C', date: '06/30 04:00' },
+    { id: 83, desc: '2K vs 2L',          a: '2K', b: '2L', date: '07/03 02:00' },
+    { id: 84, desc: '1H vs 2J',          a: '1H', b: '2J', date: '07/03 02:00' },
+    { id: 81, desc: '1D vs 3B/E/F/I/J',  a: '1D', b: '3B/E/F/I/J', date: '07/01 23:00' },
+    { id: 82, desc: '1G vs 3A/E/H/I/J',  a: '1G', b: '3A/E/H/I/J', date: '07/01 23:00' },
+    { id: 76, desc: '1C vs 2F',          a: '1C', b: '2F', date: '06/30 04:00' },
+    { id: 78, desc: '2E vs 2I',          a: '2E', b: '2I', date: '06/28 22:00' },
+    { id: 79, desc: '1A vs 3C/E/F/H/I',  a: '1A', b: '3C/E/F/H/I', date: '07/01 03:00' },
+    { id: 80, desc: '1L vs 3E/H/I/J/K',  a: '1L', b: '3E/H/I/J/K', date: '07/01 03:00' },
+    { id: 86, desc: '1J vs 2H',          a: '1J', b: '2H', date: '07/02 22:00' },
+    { id: 88, desc: '2D vs 2G',          a: '2D', b: '2G', date: '07/02 22:00' },
+    { id: 85, desc: '1B vs 3E/F/G/I/J',  a: '1B', b: '3E/F/G/I/J', date: '07/02 22:00' },
+    { id: 87, desc: '1K vs 3D/E/I/J/L',  a: '1K', b: '3D/E/I/J/L', date: '07/02 22:00' }
+  ];
+
+  const R16_MATCHES = [
+    { id: 89, left: 74, right: 77, date: '07/05 00:00' },
+    { id: 90, left: 73, right: 75, date: '07/05 00:00' },
+    { id: 93, left: 83, right: 84, date: '07/05 00:00' },
+    { id: 94, left: 81, right: 82, date: '07/05 00:00' },
+    { id: 91, left: 76, right: 78, date: '07/05 00:00' },
+    { id: 92, left: 79, right: 80, date: '07/05 00:00' },
+    { id: 95, left: 86, right: 88, date: '07/05 00:00' },
+    { id: 96, left: 85, right: 87, date: '07/05 00:00' }
+  ];
+
+  const QF_MATCHES = [
+    { id: 97, left: 89, right: 90, date: '07/09 00:00' },
+    { id: 98, left: 93, right: 94, date: '07/09 00:00' },
+    { id: 99, left: 91, right: 92, date: '07/09 00:00' },
+    { id: 100, left: 95, right: 96, date: '07/09 00:00' }
+  ];
+
+  const SF_MATCHES = [
+    { id: 101, left: 97, right: 98, date: '07/13 00:00' },
+    { id: 102, left: 99, right: 100, date: '07/13 00:00' }
+  ];
+
+  const FINAL_MATCH = { id: 103, left: 101, right: 102, date: '07/18 00:00' };
+  // Матч за 3-е место – проигравшие из полуфиналов (101 и 102)
+  const THIRD_PLACE_MATCH = { id: 104, left: 101, right: 102, date: '07/19 00:00', label: '3-е место' };
+
+  // ------------------------------------------------------------
+  // 6. ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
+  // ------------------------------------------------------------
+  function getGroupRankings() {
+    const rankings = {};
+    for (const [g, teams] of Object.entries(GROUPS_DATA)) {
+      const ptsArr = points[g] || teams.map(() => 0);
+      const order = groupOrder[g] || teams.map((_, i) => i);
+      const items = order.map((idx) => ({
+        team: teams[idx],
+        pts: ptsArr[idx] || 0,
+        idx: idx
+      }));
+      rankings[g] = items.map((item, rank) => ({
+        ...item,
+        rank: rank + 1,
+        qual: rank < 2 ? 'top2' : (rank === 2 ? 'third' : 'out')
+      }));
+    }
+    return rankings;
+  }
+
+  function getAllThirdTeams(rankings) {
+    const thirds = [];
+    for (const [g, ranked] of Object.entries(rankings)) {
+      const third = ranked.find(r => r.rank === 3);
+      if (third) {
+        thirds.push({ team: third.team, group: g, pts: third.pts, idx: third.idx });
+      }
+    }
+    return thirds;
+  }
+
+  function getSortedThirdTeams(rankings) {
+    const allThirds = getAllThirdTeams(rankings);
+    const currentSet = new Set(allThirds.map(t => t.team + t.group));
+    const orderSet = new Set(thirdOrder.map(t => t.team + t.group));
+    const needRebuild = (thirdOrder.length === 0) || (allThirds.length !== thirdOrder.length) ||
+                        !allThirds.every(t => orderSet.has(t.team + t.group));
+    if (needRebuild) {
+      thirdOrder = allThirds.slice().sort((a, b) => {
+        if (b.pts !== a.pts) return b.pts - a.pts;
+        return a.group.localeCompare(b.group);
+      });
+    } else {
+      const ptsMap = {};
+      allThirds.forEach(t => { ptsMap[t.team + t.group] = t.pts; });
+      thirdOrder.forEach(t => { t.pts = ptsMap[t.team + t.group] || 0; });
+      thirdOrder.sort((a, b) => {
+        if (b.pts !== a.pts) return b.pts - a.pts;
+        return 0;
+      });
+    }
+    return thirdOrder;
+  }
+
+  // ------------------------------------------------------------
+  // 7. ПОИСК В ТАБЛИЦЕ ПО МНОЖЕСТВУ ГРУПП
+  // ------------------------------------------------------------
+  function findPairing(thirdGroups) {
+    const targetSet = new Set(thirdGroups);
+    const targetKey = Array.from(targetSet).sort().join('|');
+    for (const row of PAIRINGS) {
+      const rowSet = new Set(row);
+      const rowKey = Array.from(rowSet).sort().join('|');
+      if (rowKey === targetKey) {
+        return row;
+      }
+    }
+    return null;
+  }
+
+  // ------------------------------------------------------------
+  // 8. ПОСТРОЕНИЕ СЕТКИ
+  // ------------------------------------------------------------
+  function getMatchTeams(match, slotMap, groupWinners, thirdAssignment) {
+    // Для матчей следующих раундов (с left/right)
+    if (match.left !== undefined && match.right !== undefined) {
+      const leftWinner = matchWinners[match.left] || null;
+      const rightWinner = matchWinners[match.right] || null;
+      return { teamA: leftWinner, teamB: rightWinner, sourceA: `W${match.left}`, sourceB: `W${match.right}` };
+    }
+
+    // Для 1/16
+    let winnerSlot = null;
+    let thirdSlot = null;
+    if (match.a && match.a.startsWith('1')) {
+      winnerSlot = match.a;
+      thirdSlot = match.b;
+    } else if (match.b && match.b.startsWith('1')) {
+      winnerSlot = match.b;
+      thirdSlot = match.a;
+    }
+
+    if (winnerSlot && thirdSlot && thirdSlot.startsWith('3')) {
+      const group = winnerSlot.slice(1);
+      const winnerTeam = groupWinners[group] || null;
+      const thirdTeam = thirdAssignment[winnerSlot] || null;
+      return { teamA: winnerTeam, teamB: thirdTeam, sourceA: match.a, sourceB: match.b };
+    } else {
+      const teamA = slotMap[match.a] || null;
+      const teamB = slotMap[match.b] || null;
+      return { teamA, teamB, sourceA: match.a, sourceB: match.b };
+    }
+  }
+
+  // Получить победителя матча или проигравшего (для 3-го места)
+  function getWinner(matchId) { return matchWinners[matchId] || null; }
+
+  // Для матча за 3-е место – возвращаем проигравших из полуфиналов
+  function getThirdPlaceTeams() {
+    const s1 = matchWinners[101] || null;
+    const s2 = matchWinners[102] || null;
+    // Находим команды, которые участвовали в полуфиналах, но не победили
+    // Для этого нужно знать участников полуфиналов. Используем getMatchTeams для полуфиналов.
+    // Но проще: при выборе победителя мы можем сохранять проигравшего.
+    // Однако у нас нет отдельного хранилища проигравших. Поэтому вычислим их на основе matchWinners.
+    // Если победитель известен, то второй участник – проигравший.
+    // Для этого нужно знать состав полуфиналов.
+    // Мы можем получить участников полуфинала из getMatchTeams для match.id=101 и 102.
+    // Но getMatchTeams требует slotMap, groupWinners, thirdAssignment – они доступны в renderBracket.
+    // Поэтому в renderBracket мы создадим отдельную функцию.
+    return null; // Заглушка – будет вычислено в renderBracket
+  }
+
+  window.selectWinner = function(matchId, team) {
+    if (matchWinners[matchId] === team) {
+      delete matchWinners[matchId];
+    } else {
+      matchWinners[matchId] = team;
+    }
+    renderAll();
+  };
+
+  window.swapGroup = function(group, index, direction) {
+    if (isFixed) return;
+    const order = groupOrder[group];
+    const newIndex = index + direction;
+    if (newIndex < 0 || newIndex >= order.length) return;
+    [order[index], order[newIndex]] = [order[newIndex], order[index]];
+    for (let key in matchWinners) delete matchWinners[key];
+    renderAll();
+  };
+
+  window.swapThird = function(index, direction, start, end) {
+    if (isFixed) return;
+    const newIndex = index + direction;
+    if (newIndex < start || newIndex > end) return;
+    [thirdOrder[index], thirdOrder[newIndex]] = [thirdOrder[newIndex], thirdOrder[index]];
+    for (let key in matchWinners) delete matchWinners[key];
+    renderAll();
+  };
+
+  // ------------------------------------------------------------
+  // 9. РЕНДЕРИНГ
+  // ------------------------------------------------------------
+  function renderGroups() {
+    const container = document.getElementById('groupsContainer');
+    const rankings = getGroupRankings();
+    container.innerHTML = '';
+    const groupNames = Object.keys(GROUPS_DATA);
+
+    for (const g of groupNames) {
+      const teams = GROUPS_DATA[g];
+      const ptsArr = points[g] || teams.map(() => 0);
+      const ranked = rankings[g] || [];
+      const order = groupOrder[g] || teams.map((_, i) => i);
+
+      const card = document.createElement('div');
+      card.className = 'group-card';
+      const title = document.createElement('div');
+      title.className = 'group-title';
+      title.textContent = `Группа ${g}`;
+      card.appendChild(title);
+
+      order.forEach((idx, pos) => {
+        const team = teams[idx];
+        const pts = ptsArr[idx] || 0;
+        const rankInfo = ranked.find(r => r.idx === idx);
+        const rank = rankInfo ? rankInfo.rank : pos+1;
+        const isQualified = rank <= 2;
+
+        const row = document.createElement('div');
+        row.className = 'team-row';
+        if (isQualified) row.classList.add('qualified');
+
+        const input = document.createElement('input');
+        input.type = 'number';
+        input.min = 0;
+        input.max = 99;
+        input.value = pts;
+        input.disabled = isFixed;
+        input.addEventListener('input', (e) => {
+          if (isFixed) return;
+          let val = parseInt(e.target.value, 10);
+          if (isNaN(val) || val < 0) val = 0;
+          points[g][idx] = val;
+          const order = groupOrder[g];
+          order.sort((a, b) => {
+            const ptsA = points[g][a] || 0;
+            const ptsB = points[g][b] || 0;
+            return ptsB - ptsA;
+          });
+          thirdOrder = [];
+          for (let key in matchWinners) delete matchWinners[key];
+          renderAll();
+        });
+
+        const nameSpan = document.createElement('span');
+        nameSpan.className = 'team-name';
+        const flagSpan = document.createElement('span');
+        flagSpan.className = 'flag-emoji';
+        flagSpan.textContent = getFlag(team);
+        nameSpan.appendChild(flagSpan);
+
+        const codeSpan = document.createElement('span');
+        codeSpan.className = 'short-code';
+        codeSpan.textContent = getCode(team);
+        nameSpan.appendChild(codeSpan);
+        nameSpan.append(' ' + team);
+
+        const statsSpan = document.createElement('span');
+        statsSpan.className = 'team-stats';
+
+        let qualText = '', qualClass = 'qual-no';
+        if (rank === 1) { qualText = '1️⃣'; qualClass = 'qual-1'; }
+        else if (rank === 2) { qualText = '2️⃣'; qualClass = 'qual-2'; }
+        else if (rank === 3) { qualText = '3️⃣'; qualClass = 'qual-3'; }
+        else { qualText = '4'; qualClass = 'qual-no'; }
+
+        statsSpan.innerHTML = `
+          <span class="pts">${pts}</span>
+          <span class="qual-badge ${qualClass}">${qualText}</span>
+        `;
+
+        const btnUp = document.createElement('button');
+        btnUp.className = 'swap-btn' + (isFixed ? ' disabled' : '');
+        btnUp.textContent = '↑';
+        btnUp.title = 'Переместить выше';
+        btnUp.addEventListener('click', (e) => {
+          e.stopPropagation();
+          window.swapGroup(g, pos, -1);
+        });
+
+        const btnDown = document.createElement('button');
+        btnDown.className = 'swap-btn' + (isFixed ? ' disabled' : '');
+        btnDown.textContent = '↓';
+        btnDown.title = 'Переместить ниже';
+        btnDown.addEventListener('click', (e) => {
+          e.stopPropagation();
+          window.swapGroup(g, pos, 1);
+        });
+
+        row.appendChild(input);
+        row.appendChild(nameSpan);
+        if (!isFixed) {
+          row.appendChild(btnUp);
+          row.appendChild(btnDown);
+        }
+        row.appendChild(statsSpan);
+        card.appendChild(row);
+      });
+
+      container.appendChild(card);
+    }
+  }
+
+  function renderThirdPlaces() {
+    const container = document.getElementById('thirdPlaceContainer');
+    const rankings = getGroupRankings();
+    const sorted = getSortedThirdTeams(rankings);
+
+    // Группы с одинаковыми очками
+    const equalGroups = [];
+    let i = 0;
+    while (i < sorted.length) {
+      let j = i;
+      while (j < sorted.length && sorted[j].pts === sorted[i].pts) j++;
+      if (j - i > 1) {
+        equalGroups.push({ start: i, end: j - 1 });
+      }
+      i = j;
+    }
+
+    let html = `<h3>🏆 Лучшие третьи места (проходят 8 из ${sorted.length})</h3><div class="third-list">`;
+    sorted.forEach((item, idx) => {
+      const isQualified = idx < 8;
+      let isInEqualGroup = false;
+      let groupStart = -1, groupEnd = -1;
+      for (const eq of equalGroups) {
+        if (idx >= eq.start && idx <= eq.end) {
+          isInEqualGroup = true;
+          groupStart = eq.start;
+          groupEnd = eq.end;
+          break;
+        }
+      }
+      const isConflict = isInEqualGroup;
+      let cls = 'third-item';
+      if (isConflict) cls += ' conflict';
+      else if (isQualified) cls += ' qualified';
+
+      const flag = getFlag(item.team);
+      const code = getCode(item.team);
+      const pts = item.pts;
+      const group = item.group;
+
+      html += `<div class="${cls}">
+        <span class="flag-emoji">${flag}</span>
+        <span class="code">${code}</span>
+        <span>(${group})</span>
+        <span class="pts">${pts}</span>`;
+      if (isConflict && !isFixed) {
+        html += `<button class="swap-btn" onclick="window.swapThird(${idx}, -1, ${groupStart}, ${groupEnd})">↑</button>
+                 <button class="swap-btn" onclick="window.swapThird(${idx}, 1, ${groupStart}, ${groupEnd})">↓</button>`;
+      }
+      html += `</div>`;
+    });
+    html += `</div>`;
+    container.innerHTML = html;
+  }
+
+  function renderBracket() {
+    const container = document.getElementById('bracketContainer');
+    const rankings = getGroupRankings();
+    const sortedThirds = getSortedThirdTeams(rankings);
+    const top8 = sortedThirds.slice(0, 8);
+    const thirdGroups = top8.map(t => t.group);
+
+    const assignedRow = findPairing(thirdGroups);
+    if (!assignedRow) {
+      container.innerHTML = `<div style="color:#dc2626; font-weight:bold;">Ошибка: комбинация третьих команд не найдена в таблице. Измените порядок вручную.</div>`;
+      return;
+    }
+
+    const winnerSlots = ['1A','1B','1D','1E','1G','1I','1K','1L'];
+    const thirdAssignment = {};
+    for (let i = 0; i < 8; i++) {
+      const group = assignedRow[i];
+      const teamObj = top8.find(t => t.group === group);
+      if (teamObj) {
+        thirdAssignment[winnerSlots[i]] = teamObj.team;
+      } else {
+        thirdAssignment[winnerSlots[i]] = null;
+      }
+    }
+
+    const groupWinners = {};
+    const slotMap = {};
+    for (const [g, ranked] of Object.entries(rankings)) {
+      const first = ranked.find(r => r.rank === 1);
+      if (first) {
+        groupWinners[g] = first.team;
+        slotMap[`1${g}`] = first.team;
+      }
+      const second = ranked.find(r => r.rank === 2);
+      if (second) {
+        slotMap[`2${g}`] = second.team;
+      }
+    }
+
+    // Вспомогательная функция для получения проигравшего в полуфинале
+    function getLoser(semiMatchId) {
+      // Находим участников полуфинала
+      const semiMatch = SF_MATCHES.find(m => m.id === semiMatchId);
+      if (!semiMatch) return null;
+      const { teamA, teamB } = getMatchTeams(semiMatch, slotMap, groupWinners, thirdAssignment);
+      const winner = matchWinners[semiMatchId] || null;
+      if (!winner) return null;
+      if (teamA === winner) return teamB;
+      if (teamB === winner) return teamA;
+      return null;
+    }
+
+    function renderMatch(m) {
+      let teamA, teamB, sourceA, sourceB;
+
+      // Особый случай: матч за 3-е место (id=104)
+      if (m.id === 104) {
+        const loser1 = getLoser(101);
+        const loser2 = getLoser(102);
+        teamA = loser1 || null;
+        teamB = loser2 || null;
+        sourceA = 'L101';
+        sourceB = 'L102';
+      } else {
+        const result = getMatchTeams(m, slotMap, groupWinners, thirdAssignment);
+        teamA = result.teamA;
+        teamB = result.teamB;
+        sourceA = result.sourceA;
+        sourceB = result.sourceB;
+      }
+
+      const winner = getWinner(m.id);
+
+      const canSelect = (team) => team !== null && m.id !== 104; // матч за 3-е место не кликабелен
+      const teamSlot = (team) => {
+        if (!team) return `<span class="team-slot no-click">—</span>`;
+        const isWinner = (winner === team);
+        const clickable = canSelect(team);
+        const cls = `team-slot${isWinner ? ' winner' : ''}${!clickable ? ' no-click' : ''}`;
+        const flag = getFlag(team);
+        const code = getCode(team);
+        return `<span class="${cls}" onclick="selectWinner(${m.id}, '${team}')"><span class="flag-emoji">${flag}</span> ${code}</span>`;
+      };
+
+      const leftHtml = teamSlot(teamA);
+      const rightHtml = teamSlot(teamB);
+      const matchLabel = `M${m.id}`;
+      const dateStr = m.date || '—';
+      const label = m.label || '';
+
+      return `
+        <div class="match-card">
+          <div class="match-header">
+            <span><strong>${matchLabel}</strong> ${label}</span>
+            <span>${dateStr}</span>
+          </div>
+          <div class="match-teams">
+            ${leftHtml}
+            <span class="vs">vs</span>
+            ${rightHtml}
+          </div>
+          <div class="match-source">
+            <span>${sourceA} vs ${sourceB}</span>
+            ${winner ? `<span class="status">✅ ${getCode(winner)}</span>` : ''}
+          </div>
+        </div>
+      `;
+    }
+
+    // Формируем колонки
+    const leftR32 = R32_FIXTURES.slice(0, 8);
+    const rightR32 = R32_FIXTURES.slice(8);
+    const leftR16 = R16_MATCHES.slice(0, 4);
+    const rightR16 = R16_MATCHES.slice(4);
+    const leftQF = QF_MATCHES.slice(0, 2);
+    const rightQF = QF_MATCHES.slice(2);
+    const leftSF = SF_MATCHES.slice(0, 1);
+    const rightSF = SF_MATCHES.slice(1);
+    const finalMatches = [FINAL_MATCH];
+    // Матч за 3-е место – помещаем под финалом
+    const thirdPlaceMatches = [THIRD_PLACE_MATCH];
+
+    const columns = [
+      { label: '1/16', matches: leftR32 },
+      { label: '1/8', matches: leftR16 },
+      { label: '1/4', matches: leftQF },
+      { label: '1/2', matches: leftSF },
+      { label: 'Финал', matches: finalMatches },
+      { label: '3-е место', matches: thirdPlaceMatches },
+      { label: '1/2', matches: rightSF },
+      { label: '1/4', matches: rightQF },
+      { label: '1/8', matches: rightR16 },
+      { label: '1/16', matches: rightR32 }
+    ];
+
+    let html = '';
+    for (const col of columns) {
+      html += `<div class="round-column">`;
+      html += `<div class="round-label">${col.label}</div>`;
+      for (const m of col.matches) {
+        html += renderMatch(m);
+      }
+      html += `</div>`;
+    }
+
+    container.innerHTML = html;
+  }
+
+  // ------------------------------------------------------------
+  // 10. ОБЩИЙ РЕНДЕР И УПРАВЛЕНИЕ ФИКСАЦИЕЙ
+  // ------------------------------------------------------------
+  function renderAll() {
+    renderGroups();
+    renderThirdPlaces();
+    renderBracket();
+    document.getElementById('fixBtn').disabled = isFixed;
+    document.getElementById('unfixBtn').disabled = !isFixed;
+    document.getElementById('fixBtn').textContent = isFixed ? '🔒 Зафиксировано' : '✅ Зафиксировать места';
+  }
+
+  document.getElementById('fixBtn').addEventListener('click', () => {
+    if (isFixed) return;
+    const rankings = getGroupRankings();
+    const sortedThirds = getSortedThirdTeams(rankings);
+    const top8 = sortedThirds.slice(0, 8);
+    const thirdGroups = top8.map(t => t.group);
+    const found = findPairing(thirdGroups);
+    if (!found) {
+      alert('Текущий набор третьих команд не соответствует ни одному варианту из таблицы. Попробуйте изменить порядок вручную (перемещая команды в списке третьих мест).');
+      return;
+    }
+    isFixed = true;
+    renderAll();
+  });
+
+  document.getElementById('unfixBtn').addEventListener('click', () => {
+    isFixed = false;
+    renderAll();
+  });
+
+  document.getElementById('resetBtn').addEventListener('click', () => {
+    initPoints();
+    for (let key in matchWinners) delete matchWinners[key];
+    thirdOrder = [];
+    isFixed = false;
+    renderAll();
+  });
+
+  // ------------------------------------------------------------
+  // 11. СТАРТ
+  // ------------------------------------------------------------
+  renderAll();
+</script>
+</body>
+</html>
